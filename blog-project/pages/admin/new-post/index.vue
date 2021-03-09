@@ -1,58 +1,46 @@
 <template>
   <div class="admin-new-post-page">
     <section class="new-post-form">
-      <form @submit.prevent="onSave">
-        <AppControlInput v-model="editedPost.author"
-          >Author Name</AppControlInput
-        >
-        <AppControlInput v-model="editedPost.title">Title</AppControlInput>
-        <AppControlInput v-model="editedPost.thumbnailLink"
-          >Thumbnail Link</AppControlInput
-        >
-        <AppControlInput control-type="textarea" v-model="editedPost.content"
-          >Content</AppControlInput
-        >
-        <AppButton type="submit">Save</AppButton>
-        <AppButton
-          type="button"
-          style="margin-left: 10px"
-          btn-style="cancel"
-          @click="onCancel"
-          >Cancel</AppButton
-        >
-      </form>
+      <AdminPostForm @submit-post="onSubmitted" />
     </section>
   </div>
 </template>
 
 <script>
-import AppControlInput from "@/components/UI/AppControlInput";
-import AppButton from "@/components/UI/AppButton";
+import axios from "axios";
+import AdminPostForm from "@/components/admin/AdminPostForm.vue";
 
 export default {
+  layout: "admin",
   components: {
-    AppControlInput,
-    AppButton
-  },
-  data() {
-    return {
-      editedPost: {
-        author: "",
-        title: "",
-        thumbnailLink: "",
-        content: ""
-      }
-    };
+    AdminPostForm
   },
   methods: {
-    onSave() {
-      // Save the post
-      console.log(this.editedPost);
-    },
-    onCancel() {
-      // Navigate back
-      this.$router.push("/admin");
+    onSubmitted: async function(post) {
+      const result = await axios
+        .post(
+          "https://nuxt-blog-8d745-default-rtdb.firebaseio.com/posts.json",
+          {
+            ...post,
+            updatedDate: new Date()
+          }
+        )
+        .catch(e => console.log(e));
+      console.log(result);
     }
   }
 };
 </script>
+
+<style scoped>
+.new-post-form {
+  width: 90%;
+  margin: 20px auto;
+}
+
+@media (min-width: 768px) {
+  .new-post-form {
+    width: 500px;
+  }
+}
+</style>
