@@ -8,12 +8,7 @@
 </template>
 
 <script>
-import PostList from "@/components/posts/PostList";
-
 export default {
-  components: {
-    PostList
-  },
   // asyncData() {
   //   console.log('asyncData is executed!');
   //   return new Promise(resolve => {

@@ -5,12 +5,8 @@
 </template>
 
 <script>
-import PostList from "@/components/posts/PostList";
-
 export default {
-  components: {
-    PostList
-  },
+  middleware: 'log',
   // asyncData: async function() {
   //   return {
   //     loadedPosts: await new Promise(resolve => {

@@ -4,7 +4,7 @@
       <h1 class="post-title">{{ loadedPost.title }}</h1>
       <div class="post-details">
         <div class="post-detail">
-          Last update on {{ loadedPost.updatedDate }}
+          Last update on {{ loadedPost.updatedDate | date }}
         </div>
         <div class="post-detail">Written by {{ loadedPost.author }}</div>
       </div>
@@ -22,8 +22,6 @@
 </template>
 
 <script>
-import axios from 'axios';
-
 export default {
   // async asyncData({ params : { id }, error }) {
   //   return {
@@ -47,12 +45,15 @@ export default {
   //   };
   // }
   asyncData: function(context) {
-    return axios
-            .get(`https://nuxt-blog-8d745-default-rtdb.firebaseio.com/posts/${context.params.id}.json`)
-            .then(({ data }) => ({
+    return context.app.$axios
+            .$get(`${process.env.baseUrl}/posts/${context.params.id}.json`)
+            .then( data  => ({
               loadedPost: { ...data }
             }))
             .catch(e => context.error(e));
+  },
+  head: {
+    title: 'A Single Blog Post'
   }
 };
 </script>

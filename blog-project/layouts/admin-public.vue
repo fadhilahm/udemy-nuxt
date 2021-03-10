@@ -4,12 +4,6 @@
   </div>
 </template>
 
-<script>
-export default {
-  middleware: ['auth']
-}
-</script>
-
 <style>
 html {
   font-family: 'Open sans', sans-serif;
