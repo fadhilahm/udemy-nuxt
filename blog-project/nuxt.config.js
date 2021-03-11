@@ -1,3 +1,6 @@
+const bodyParser = require('body-parser');
+const axios = require('axios');
+
 export default {
   mode: 'universal',
   // Global page headers: https://go.nuxtjs.dev/config-head
@@ -55,7 +58,8 @@ export default {
 
   env: {
     baseUrl: process.env.BASE_URL || 'https://nuxt-blog-8d745-default-rtdb.firebaseio.com',
-    fbAPIKey: 'AIzaSyD28nlSj11vRv5ZWY6vVSsTQIyLSqmmrRg'
+    fbAPIKey: 'AIzaSyD28nlSj11vRv5ZWY6vVSsTQIyLSqmmrRg',
+    serverMiddlewareBaseUrl: 'http://localhost:3001'
   },
 
   router: {
@@ -71,5 +75,32 @@ export default {
   transition: {
     name: 'fade',
     mode: 'out-in'
+  },
+
+  server: {
+    port: process.env.PORT || 3001
+  },
+
+  serverMiddleware: [
+    bodyParser.json(),
+    '~api'
+  ],
+
+  generate: {
+    routes: function() {
+      return axios.get('https://nuxt-blog-8d745-default-rtdb.firebaseio.com/posts.json')
+        .then(({ data }) => {
+          const routes = [];
+          for (const key in data) {
+            routes.push({
+              route: `/posts/${key}`,
+              payload: {
+                postData: data[key]
+              }
+            });
+          }
+          return routes;
+        })
+    }
   }
 }

@@ -1,4 +1,5 @@
 import { Store } from 'vuex';
+import Cookie from 'js-cookie';
 
 export default function createStore() {
     return new Store({
@@ -107,14 +108,56 @@ export default function createStore() {
                     })
                     .then(({ idToken, expiresIn }) => {
                         commit('SET_TOKEN', idToken);
-                        dispatch('setLogoutTimer', expiresIn * 1000);
+                        const expiryDate = new Date().getTime() + +expiresIn * 1000;
+                        localStorage.setItem('token', idToken);
+                        localStorage.setItem('expiryDate', expiryDate);
+                        Cookie.set('token', idToken);
+                        Cookie.set('expiryDate', expiryDate);
+                        return this.$axios.$post(`${process.env.serverMiddlewareBaseUrl}/api/track-data`, {
+                            data: "Authenticated user!"
+                        })
                     })
                     .catch(e => console.log(e));
             },
-            setLogoutTimer: ({ commit }, duration) => {
-                setTimeout(() => {
-                    commit('SET_TOKEN', null);
-                }, duration)
+            initAuth(ctx, req) {
+                let token;
+                let expiryDate;
+
+                if (req) {
+                    if (!req.headers.cookie) {
+                        return;
+                    }
+                    const cookie = req.headers.cookie
+                                .split(';')
+                                .find(c => c.trim().startsWith('token='));
+                    if (!cookie) {
+                        return;
+                    }
+                    token = cookie.split('=')[1];
+                    expiryDate = req.headers.cookie
+                                .split(';')
+                                .find(c => c.trim().startsWith('expiryDate='))
+                                .split('=')[1];
+                } else if (process.client) {
+                    token = localStorage.getItem('token');
+                    expiryDate = localStorage.getItem('expiryDate');
+                }
+
+                if (!token || new Date().getTime() > +expiryDate) {
+                    ctx.dispatch('logout');
+                    return;
+                }
+
+                ctx.commit('SET_TOKEN', token);
+            },
+            logout(ctx) {
+                ctx.commit('SET_TOKEN', null);
+                Cookie.remove('token');
+                Cookie.remove('expiryDate');
+                if (process.client) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('expiryDate');
+                }
             }
         }
     });
